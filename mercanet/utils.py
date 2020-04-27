@@ -57,6 +57,7 @@ def compute_seal(
         crypto_func: Callable[[str, str], str] = seal_hmac_sha256_from_string,
 ) -> str:
     dict_data.pop("keyVersion", None)
+    dict_data.pop("seal", None)
     dict_data.pop("sealAlgorithm", None)
     sorted(dict_data)  # les clés doivent être en ordre alphabétique
 
@@ -64,10 +65,8 @@ def compute_seal(
     for key in sorted(dict_data.keys()):
         if dict_data[key] == "null":
             continue
-        # if type(dict_data[key]) == type(list()):
-        #    str_concat += ''.join(dict_data[key])
         str_concat += str(dict_data[key])
-    print(f"str concat go brr {str_concat}")
+    # print(f"str concat go brr {str_concat}")
     return crypto_func(str_concat, secret)
 
 
@@ -78,7 +77,6 @@ def fromVomi(source: str) -> dict:
             key, value = elem.split("=")
             ret[key] = value
         except ValueError:
-            print("ve,", elem)
             key, *value = elem.split("=")
             # * car il peut y avoir plusieurs '=' dans le cas du XML nested chelou
             ret[key] = value
