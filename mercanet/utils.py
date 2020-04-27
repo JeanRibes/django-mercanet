@@ -1,5 +1,7 @@
 import hashlib
+import hmac
 from datetime import datetime
+from typing import Callable
 
 responseCodes = {
     "00": "Transaction acceptée",
@@ -21,8 +23,65 @@ responseCodes = {
 }
 
 
-def genId(id):
+def genId(id: str) -> str:
+    """
+    Génère le transactionReference à partir de la date et d'un id
+    :param id: l'id de la transaction en base de donnée
+    :return:
+    """
     return (
-        (datetime.now().strftime("%Y%m%d%H")
-         + hashlib.sha1(bytearray(id.encode("UTF-8"))).hexdigest())[:34]
-    )
+                   datetime.now().strftime("%Y%m%d%H")
+                   + hashlib.sha1(bytearray(id.encode("UTF-8"))).hexdigest()
+           )[
+           :34
+           ]  # limite = 35
+
+
+def seal_hmac_sha256_from_string(string_data: str, secret: str) -> str:
+    return hmac.new(
+        key=bytearray(secret.encode("utf-8")),
+        msg=bytearray(string_data.encode("utf-8")),
+        digestmod=hashlib.sha256,
+    ).hexdigest()
+
+
+def seal_sha256_from_string(string: str, secret: str) -> str:
+    raise DeprecationWarning("Cette fonction est encore moins sécurisée !")
+    # content = string + secret
+    # return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def compute_seal(
+        dict_data: dict,
+        secret: str,
+        crypto_func: Callable[[str, str], str] = seal_hmac_sha256_from_string,
+) -> str:
+    dict_data.pop("keyVersion", None)
+    dict_data.pop("sealAlgorithm", None)
+    sorted(dict_data)  # les clés doivent être en ordre alphabétique
+
+    str_concat = ""
+    for key in sorted(dict_data.keys()):
+        if dict_data[key] == "null":
+            continue
+        # if type(dict_data[key]) == type(list()):
+        #    str_concat += ''.join(dict_data[key])
+        str_concat += str(dict_data[key])
+    print(f"str concat go brr {str_concat}")
+    return crypto_func(str_concat, secret)
+
+
+def fromVomi(source: str) -> dict:
+    ret = {}
+    for elem in source.split("|"):
+        try:
+            key, value = elem.split("=")
+            ret[key] = value
+        except ValueError:
+            print("ve,", elem)
+            key, *value = elem.split("=")
+            # * car il peut y avoir plusieurs '=' dans le cas du XML nested chelou
+            ret[key] = value
+        except:
+            continue
+    return ret

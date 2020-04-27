@@ -24,7 +24,9 @@ SECRET_KEY = "(x!i%fqp#pr&$$7*08x+sq5lvf0bu-2ta*vutcd#*mz3gw7b+$"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [] + [os.environ.get('HOST', 'neon.home.ribes.ovh')]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + os.environ.get(
+    "HOST", "neon.home.ribes.ovh"
+).split(",")
 
 # Application definition
 
@@ -109,7 +111,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 MERCANET = {
-    "INTERFACE_VERSION": os.environ.get("MERCANET_INTERFACE_VERSION", "IR_WS_2.18"),
+    "INTERFACE_VERSION": os.environ.get(
+        "MERCANET_INTERFACE_VERSION", "IR_WS_2.30"
+    ),  # HP_2.20 #HP_2.21
     "KEY_VERSION": os.environ.get("MERCANET_KEY_VERSION", "1"),
     "MERCHANT_ID": os.environ.get("MERCANET_MERCHANT_ID", "211000021310001"),
     "URL": os.environ.get(
