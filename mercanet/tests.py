@@ -1,12 +1,17 @@
 # Create your tests here.
+import random
 from unittest import TestCase
 
-from mercanet.utils import seal_hmac_sha256_from_string, fromVomi, compute_seal
+from mercanet.models import TransactionMercanet
+from mercanet.serializers import seal_transaction
+from mercanet.utils import seal_hmac_sha256_from_string, fromVomi, compute_seal, genId
 
 
 class SealTest(TestCase):
     def setUp(self):
         self.secret_key = "S9i8qClCnb2CZU3y3Vn0toIOgz3z_aBi79akR30vM9o"
+        # os.environ.set("DJANGO_SETTINGS_MODULE",'mercannette.settings')
+        # settings.configure()
 
     def tearDown(self) -> None:
         return super().tearDown()
@@ -41,7 +46,7 @@ class SealTest(TestCase):
             "transactionOrigin": "SO_WEBAPPLI",
             "transactionReference": "TREFEXA2012",
         }  # données de SIPS Worldline
-
+        # [  ('interfaceVersion', 'IR_WS_2.30'), ('transactionReference', '2020043014bc33ea4e26e5e1af14083214'), ('returnContext', 'test hé salut'), ('normalReturnUrl', 'https://perdu.com/'), ('seal', 'a1ff1bf206ef7578326a20dde7d8c4c57d3d8bb65a3d3384460097e0841da994'), ('sealAlgorithm', 'HMAC-SHA-256')])
         self.assertEqual(compute_seal(data, 'secret123'),
                          'e4d75c6a779adee5850192d1ecc162ca0c85e960cb00d9923879609f89739152')
 
@@ -91,3 +96,11 @@ class SealTest(TestCase):
             fromVomi(reponse_auto_data),
             sortie_voulue
         )
+
+    def test_transaction_creation(self) -> TransactionMercanet:
+        self.transaction = TransactionMercanet(amount=100, orderId=random.randint(1, 999),
+                                               transactionReference=genId(str(random.randint(1, 99))))
+        self.transaction.save()
+        seal_transaction(self.transaction, self.secret_key)
+
+        return self.transaction

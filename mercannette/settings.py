@@ -127,3 +127,41 @@ MERCANET = {
         "MERCANET_REPONSE_AUTO_URL", "https://neon.home.ribes.ovh/mercanet/auto/"
     ),
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'log0': {
+            'format': '[{name}] ({asctime}) -> {message}',
+            'style': '{'
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'server_info.log',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'log0'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'mercanet': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
